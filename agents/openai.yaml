@@ -1,0 +1,4 @@
+interface:
+  display_name: "Proxy Node Operations"
+  short_description: "Deploy, tune, and verify VPS proxy nodes"
+  default_prompt: "Use $proxy-node-ops to audit, deploy, tune, and verify my VPS proxy nodes and Clash/Mihomo subscription."
