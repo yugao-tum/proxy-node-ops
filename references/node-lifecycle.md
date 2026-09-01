@@ -59,3 +59,41 @@ Do not collapse these into a single "works" check. A service can be active behin
 - Re-query cloud inventory, tailnet membership, subscription contents, and client egress after retirement.
 
 If the old node hosts unrelated workloads, separate or migrate them first. A proxy replacement request does not authorize removing other services.
+
+## Retire the resource graph, not only the instance
+
+Terminating compute is not proof that a node has stopped costing money or disappeared from clients. Static/reserved public IPs, detached disks, snapshots, custom images, NAT gateways, load balancers, security groups, key pairs, DNS, hosted subscriptions, scheduled servers, QR artifacts, tailnet records, and client databases can have independent lifecycles. On AWS in particular, an Elastic IP can remain allocated and billable after its instance is gone; a root EBS volume is removed only when its attachment has `DeleteOnTermination=true`.
+
+When a user says “delete everything,” resolve the boundary before mutation: only idle remnants, one named node and its dependencies, or every resource in the named account/regions. State which live nodes and subscription paths will stop working. Do not interpret “all” across unrelated accounts, providers, regions, or workloads.
+
+### Pre-delete ledger
+
+For every in-scope region, inventory and bind exact IDs before deleting:
+
+- non-terminated instances and each attached volume's deletion policy;
+- allocated public IPs and whether each is associated;
+- unattached volumes, snapshots, custom images, NAT gateways, and load balancers;
+- non-default security groups, key pairs, DNS/certificate objects, and other node-specific access objects;
+- tailnet device state;
+- every authoritative and derived subscription, encoded link bundle, QR artifact, persistent serving task/listener, and active client database.
+
+Back up the active client and subscription configuration needed for rollback. Keep backups outside active serving paths and exclude them from “live reference” searches.
+
+### Safe deletion order
+
+1. Release already-disassociated public IPs that are proven in scope.
+2. Terminate the exact instances and wait for the provider's terminal state.
+3. Re-inventory; confirm expected volumes were deleted, then remove authorized detached volumes and any newly disassociated public IPs.
+4. Delete dependent security groups, key pairs, images, snapshots, DNS, or hosted endpoints only after their dependencies are gone.
+5. Remove retired nodes from every active subscription variant, proxy group, raw link list, encoded derivative, QR artifact, and client database. Regenerate derivatives from the authoritative source instead of patching each representation independently.
+6. Restart or reload persistent subscription delivery when required, then validate the bytes clients actually receive.
+
+### Zero-residual acceptance
+
+Use a scoped ledger rather than a single success message. For a full regional retirement, require zero in-scope non-terminated instances, volumes, and allocated public IPs; exact node-specific security groups and key pairs absent; no retired node in active client/subscription data; no dangling proxy-group references; and the surviving subscription fetched successfully, hash-matched to its source, and accepted by the target core with a fresh data directory. Re-check persistent task state and listener after any restart.
+
+An offline Tailscale device record is normally a non-billable stale control-plane object, not proof that cloud resources remain. Remove it only when the user also authorizes tailnet cleanup. Cost Explorer can lag behind deletion, so use live inventory to prove current resource removal and label billing data as delayed rather than retrying destructive actions.
+
+### Unexpected cost after deletion
+
+Do not assume the remaining cost is CPU. Group billing by service and usage type, then compare it with the live resource ledger. Check public IPv4 allocation hours, data transfer, detached storage, snapshots/images, NAT/load-balancer hours, and taxes or credits separately. A prior month's charge remains payable after cleanup; the acceptance condition is that no current in-scope billable resource remains, not that the historical bill instantly becomes zero.

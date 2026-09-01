@@ -44,7 +44,7 @@ Start at the shallowest level that can answer the request. Escalate only when ev
 5. **Validate by layers.** Check config -> service -> listener -> outside reachability -> proxy egress -> real client path. For Tailscale, also verify the intended hostname/IP and online state after authorization.
 6. **Benchmark changes as reversible A/B tests.** Change one variable at a time, count failures, compare repeated paired samples, and restore the prior state automatically or immediately when the candidate loses.
 7. **Publish and persist the client configuration.** Preserve every intended node, actual protocol labels, group membership, route precedence, client compatibility, and protected access. Validate the served bytes, not only the local file.
-8. **Cut over and retire.** Update subscriptions and selectors, verify clients can use the replacement, then stop/delete only the resolved legacy targets. Re-query provider and tailnet state afterward.
+8. **Cut over and retire.** Update subscriptions and selectors, verify clients can use the replacement, then stop/delete only the resolved legacy targets. Treat retirement as resource-graph reconciliation rather than an instance-state change: independent IPs, storage, access objects, served artifacts, and client records may survive compute deletion. Re-query provider, tailnet, delivery, and client state afterward.
 9. **Report evidence, not ceremony.** Lead with the outcome. Include what changed, live acceptance results, rollback location or reversal method, user action still required, and unresolved limitations.
 
 ## Convert failures into reusable knowledge
